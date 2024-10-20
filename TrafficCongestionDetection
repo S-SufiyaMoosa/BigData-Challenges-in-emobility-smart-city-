@@ -1,0 +1,42 @@
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class TrafficCongestionDetection {
+
+    public static void main(String[] args) throws Exception {
+        // Check that the input and output paths are provided
+        if (args.length != 2) {
+            System.err.println("Usage: TrafficCongestionDetection <input path> <output path>");
+            System.exit(-1);
+        }
+
+        // Create a new Hadoop configuration
+        Configuration conf = new Configuration();
+        
+        // Create a new job
+        Job job = Job.getInstance(conf, "Traffic Congestion Detection");
+
+        // Set the Jar by class
+        job.setJarByClass(TrafficCongestionDetection.class);
+
+        // Set the Mapper and Reducer classes
+        job.setMapperClass(MobilityMapper.class);
+        job.setReducerClass(CongestionReducer.class);
+
+        // Set the output key and value types for Mapper and Reducer
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        // Set the input and output paths from command line arguments
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        // Exit after job completion
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
